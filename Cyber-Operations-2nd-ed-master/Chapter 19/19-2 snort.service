@@ -1,0 +1,12 @@
+# Systemd service description for a Snort service.
+
+[Unit]
+Description=Snort Intrusion Detection System
+After=syslog.target network.target
+ 
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/snort -A fast -b -d -D -i enp0s3 -u snort -g snort -c /etc/snort/etc/snort.conf -l /var/log/snort
+ 
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,63 @@
+// MOF file that launches a script whenever a user logs on to the system.
+//   The script makes a WMI query to find out information about the user, including
+//   the username and domain.
+
+#pragma namespace ("\\\\.\\root\\subscription")
+
+instance of __EventFilter as $Filter
+{
+  Name = "LogonFilter";
+    Query = "SELECT * FROM __InstanceCreationEvent WITHIN 15" 
+              "WHERE TargetInstance ISA \"Win32_LogonSession\" ";
+  QueryLanguage = "WQL";
+  EventNamespace = "root\\cimv2";
+};
+
+instance of ActiveScriptEventConsumer as $Consumer
+{
+  Name = "LogonConsumer";
+  ScriptingEngine = "VBScript";
+    
+  ScriptText =
+    "Dim file_obj, file\n"
+    "Set file_obj = CreateObject(\"Scripting.FileSystemObject\")\n"
+    "Set file = file_obj.OpenTextFile(\"C:\\Logon.txt\",8, true)\n"
+    "file.WriteLine(\"Logon Session \" & Now)\n"
+    "file.WriteLine(\"   Authentication: \" "
+	          "& TargetEvent.TargetInstance.AuthenticationPackage )\n"
+    "file.WriteLine(\"   Caption: \" "
+	          "& TargetEvent.TargetInstance.Caption )\n"
+    "file.WriteLine(\"   Description: \" "
+	          "& TargetEvent.TargetInstance.Description )\n"
+    "file.WriteLine(\"   LogonID: \" "
+	          "& TargetEvent.TargetInstance.LogonID )\n"
+    "file.WriteLine(\"   LogonType: \" "
+	          "& TargetEvent.TargetInstance.LogonType )\n"
+    "file.WriteLine(\"   Name: \" "
+	          "& TargetEvent.TargetInstance.Name )\n"
+    "file.WriteLine(\"   Status: \" "
+	          "& TargetEvent.TargetInstance.Status )\n"
+      
+    "Set WMIService = GetObject(\"winmgmts:!\\\\.\\root\\cimv2\")\n"
+    "Set UserData = WMIService.ExecQuery(\"ASSOCIATORS OF "
+	    "{Win32_LogonSession.LogonID=\" "
+	    " & TargetEvent.TargetInstance.LogonID & \"} "
+	    "WHERE ResultClass=Win32_UserAccount\")\n"  
+    "For Each obj in UserData\n"
+      "file.WriteLine(\"   Account Type: \" & obj.AccountType )\n"
+      "file.WriteLine(\"   Caption: \" & obj.Caption )\n"
+      "file.WriteLine(\"   Domain: \" & obj.Domain )\n"
+      "file.WriteLine(\"   SID: \" & obj.SID )\n"
+      "file.WriteLine(\"   Full Name: \" & obj.FullName )\n"
+      "file.WriteLine(\"   Name: \" & obj.Name )\n"
+    "Next \n"
+
+
+    "file.Close\n";
+};
+
+instance of __FilterToConsumerBinding
+{
+  Filter = $Filter;
+  Consumer = $Consumer;
+};

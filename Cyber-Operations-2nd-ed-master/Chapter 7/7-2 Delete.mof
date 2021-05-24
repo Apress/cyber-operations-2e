@@ -1,0 +1,6 @@
+// A MOF file to delete the example namespace and instances constructed in 7-1 Example.mof
+
+#pragma namespace("\\\\drake\\Root")
+
+#pragma deleteinstance
+    ("__Namespace.Name='ExampleNamespace'", FAIL)

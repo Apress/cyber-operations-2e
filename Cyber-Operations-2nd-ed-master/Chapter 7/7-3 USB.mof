@@ -1,0 +1,32 @@
+// Each time a USB device is inserted in the system, a VBScript is run that stores some properties of
+//   the drive in the file C:\LogUSB.txt
+
+#pragma namespace ("\\\\.\\root\\subscription")
+
+instance of __EventFilter as $Filter
+{
+    Name = "USB";
+    Query = "SELECT * FROM Win32_VolumeChangeEvent WHERE EventType = 2";
+    QueryLanguage = "WQL";
+    EventNamespace = "root\\cimv2";
+};
+
+instance of ActiveScriptEventConsumer as $Consumer
+{
+    Name = "USB";
+    ScriptingEngine = "VBScript";
+    
+    ScriptText =
+        "Dim file_obj, file\n"
+        "Set file_obj = CreateObject(\"Scripting.FileSystemObject\")\n"
+        "Set file = file_obj.OpenTextFile(\"C:\\LogUSB.txt\",8, true)\n"
+		"file.WriteLine(\"New drive recognized \" & Now)\n"
+		"file.WriteLine(\"  Drive Name: \" & TargetEvent.DriveName)\n"
+		"file.Close\n";
+};
+
+instance of __FilterToConsumerBinding
+{
+    Filter = $Filter;
+    Consumer = $Consumer;
+};

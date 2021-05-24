@@ -1,0 +1,23 @@
+// Example of a MOF file to create a namespace and two instances in WMI on the remote system drake
+#pragma namespace ("\\\\drake\\Root\\ExampleNamespace")
+
+class ExampleClass
+{
+    	[Key] uint64 Id;
+	string ExampleString;
+	string ExampleArray [];
+};
+
+instance of ExampleClass
+{
+Id = 1;
+ExampleString = "This is the data from Instance 1";
+ExampleArray = {"Instance 1A", "Instance 1B"};
+}; 
+
+instance of ExampleClass
+{
+Id = 2;
+ExampleString = "This is the data from Instance 2";
+ExampleArray = {"Instance 2A", "Instance 2B"};
+};
